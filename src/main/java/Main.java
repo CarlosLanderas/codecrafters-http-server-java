@@ -1,10 +1,7 @@
 
 import http.Method;
-import server.Path;
 import server.Router;
 import server.Server;
-
-import java.io.File;
 
 public class Main {
     private final static int port = 4221;
@@ -17,7 +14,9 @@ public class Main {
         }
 
         var router = new Router();
-        router.register("/files/.*", Method.GET, Handlers.fileHander(contentPath));
+
+        router.register("/files/.*", Method.POST, Handlers.postFileHandler(contentPath));
+        router.register("/files/.*", Method.GET, Handlers.fileHandler(contentPath));
         router.register("/user-agent", Method.GET, Handlers::userAgentHandler);
         router.register("/echo/.*", Method.GET, Handlers::echoHandler);
         router.register("/$", Method.GET, Handlers::rootHandler);

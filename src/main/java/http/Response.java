@@ -14,6 +14,10 @@ public class Response {
         return response(200, body);
     }
 
+    public static Response created() {
+        return response(201, null);
+    }
+
     public static Response notFound() {
         return response(404, null);
     }

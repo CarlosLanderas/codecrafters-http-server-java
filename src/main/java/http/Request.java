@@ -2,6 +2,8 @@ package http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
@@ -11,6 +13,7 @@ public record Request(
         String path,
         Method method,
         String protocol,
+        byte[] body,
         Map<String, String> headers) {
 
     public static Request fromReader(BufferedReader reader) throws IOException {
@@ -26,7 +29,16 @@ public record Request(
         var protocol = requestParts[2];
         var headers = parseHeaders(parts);
 
-        return new Request(path, method, protocol, headers);
+        byte[] body = null;
+
+        if (headers.containsKey("Content-Length")) {
+            var length = Integer.parseInt(headers.get("Content-Length"));
+            char[] charBuffer = new char[length];
+            reader.read(charBuffer, 0, length);
+            body = new String(charBuffer).getBytes(StandardCharsets.UTF_8);
+        }
+
+        return new Request(path, method, protocol, body, headers);
     }
 
     public Optional<String> getHeader(String name) {

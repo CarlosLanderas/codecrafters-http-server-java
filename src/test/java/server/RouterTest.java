@@ -21,7 +21,7 @@ public class RouterTest {
 
         final var invoke = new AtomicBoolean(false);
         final var stream = OutputStream.nullOutputStream();
-        final var dummyRequest = new Request("/test", Method.GET, "HTTP 1.1", null);
+        final var dummyRequest = new Request("/test", Method.GET, "HTTP 1.1", null,null);
         final var router = new Router();
 
         router.register("/test", Method.GET, (Request r, ResponseWriter w) -> {
@@ -37,7 +37,7 @@ public class RouterTest {
 
     @Test
     void test_Unregistered()  {
-        final var dummyRequest = new Request("/test", Method.GET, "HTTP 1.1", null);
+        final var dummyRequest = new Request("/test", Method.GET, "HTTP 1.1",  null,null);
         final var router = new Router();
         final var handler = router.get("/test", Method.GET);
 

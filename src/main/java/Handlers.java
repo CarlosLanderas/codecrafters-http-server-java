@@ -2,13 +2,23 @@ import http.Request;
 import http.Response;
 import http.ResponseWriter;
 import http.handler.Handler;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class Handlers {
 
-    public static Handler fileHander(String contentPath) {
+    public static Handler postFileHandler(String contentPath) {
+        return (Request request, ResponseWriter writer) -> {
+            var fileName = request.lastSegment();
+            Files.write(Path.of(contentPath, fileName), request.body());
+
+            Response.created().writeTo(writer);
+        };
+    }
+
+    public static Handler fileHandler(String contentPath) {
         return (Request request, ResponseWriter writer) -> {
             var filePath = Path.of(contentPath, request.lastSegment());
             if (!Files.exists(filePath)) {

@@ -1,6 +1,7 @@
 package server;
 
 import http.Request;
+import http.ResponseWriter;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -9,11 +10,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 
 public class Server implements AutoCloseable {
+    private final Router router;
     private final ServerSocket serverSocket;
 
-    public Server(int port) throws IOException {
-        serverSocket = new ServerSocket(port);
-        serverSocket.setReuseAddress(true);
+    public Server(Router router, int port) throws IOException {
+        this.router = router;
+        this.serverSocket = new ServerSocket(port);
+        this.serverSocket.setReuseAddress(true);
     }
 
     public void start() throws IOException, InterruptedException {
@@ -23,24 +26,25 @@ public class Server implements AutoCloseable {
         }
     }
 
-    private void handleSocket(Socket socket) throws InterruptedException {
+    private void handleSocket(Socket socket) {
         CompletableFuture.runAsync(() -> {
-          try(var reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-              var request = Request.fromReader(reader);
-              var out = socket.getOutputStream();
+            try (var reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                var request = Request.fromReader(reader);
+                var handler = router.get(request.path(), request.method());
+                var rw = new ResponseWriter(socket.getOutputStream());
 
-              if (request.path().equals("/")) {
-                  out.write("HTTP/1.1 200 OK\r\n\r\n".getBytes(StandardCharsets.UTF_8));
-              } else {
-                  out.write("HTTP/1.1 404 Not Found\r\n\r\n".getBytes(StandardCharsets.UTF_8));
-              }
+                handler.handle(request, rw);
+                rw.close();
 
-              out.flush();
-              out.close();
-
-          } catch (IOException e) {
-              throw new RuntimeException(e);
-          }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         });
     }
 

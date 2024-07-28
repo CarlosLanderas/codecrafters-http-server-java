@@ -1,9 +1,7 @@
 package http;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -20,11 +18,20 @@ public record Request(
             parts.add(line);
         }
 
-        var requestParts = parts.get(0).split(" ");
+        var requestParts = parts.getFirst().split(" ");
         var method = Method.fromString(requestParts[0]);
         var path = requestParts[1];
         var protocol = requestParts[2];
 
         return new Request(path, method, protocol, Map.of());
+    }
+
+    public String[] pathSegments() {
+        return path.split("/");
+    }
+
+    public String lastSegment() {
+        var segments = pathSegments();
+        return segments[segments.length - 1];
     }
 }

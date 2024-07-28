@@ -1,20 +1,28 @@
 package http;
 
+import server.Server;
+
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public record Request(
-        String path,
-        Method method,
-        String protocol,
-        byte[] body,
-        Map<String, String> headers) {
+public class Request {
+
+    private String path;
+    private Method method;
+    private String protocol;
+    private byte[] body;
+    private Map<String, String> headers = new HashMap<>();
+
+    public static Request create(String path, Method method, String protocol) {
+        return new Request()
+                .withPath(protocol)
+                .withPath(path)
+                .withMethod(method)
+                .withPath(path);
+    }
 
     public static Request fromReader(BufferedReader reader) throws IOException {
         var parts = new ArrayList<String>();
@@ -29,21 +37,79 @@ public record Request(
         var protocol = requestParts[2];
         var headers = parseHeaders(parts);
 
-        byte[] body = null;
+        return Request.create(path, method, protocol)
+                .withHeaders(headers)
+                .withBody(reader);
+    }
 
-        if (headers.containsKey("Content-Length")) {
-            var length = Integer.parseInt(headers.get("Content-Length"));
-            char[] charBuffer = new char[length];
-            reader.read(charBuffer, 0, length);
-            body = new String(charBuffer).getBytes(StandardCharsets.UTF_8);
+    protected Request withBody(BufferedReader reader) throws IOException {
+        var length = contentLength();
+        if (length > 0) {
+            this.body = parseBody(reader, length);
         }
 
-        return new Request(path, method, protocol, body, headers);
+        return this;
+    }
+
+    public Request withMethod(Method method) {
+        this.method = method;
+        return this;
+    }
+
+    public Request withPath(String path) {
+        this.path = path;
+        return this;
+    }
+
+    public Request withHeaders(Map<String, String> headers) {
+        this.headers = headers;
+        return this;
+    }
+
+    public String path() {
+        return path;
+    }
+
+    public Method method() {
+        return this.method;
+    }
+
+    public byte[] body() {
+        return this.body;
     }
 
     public Optional<String> getHeader(String name) {
         if (headers.containsKey(name)) {
             return Optional.of(headers.get(name));
+        }
+
+        return Optional.empty();
+    }
+
+    public boolean hasHeader(String name) {
+        return headers.containsKey(name);
+    }
+
+    public int contentLength() {
+        if (hasHeader("Content-Length")) {
+            return Integer.parseInt(headers.get("Content-Length"));
+        }
+
+        return 0;
+    }
+
+    public Optional<String> acceptEncoding() {
+        if (hasHeader("Accept-Encoding")) {
+            var headerEncodings = Arrays.stream(headers.get("Accept-Encoding")
+                            .split(","))
+                    .map(String::trim)
+                    .toList();
+
+            for (var encoding : headerEncodings) {
+                if (Server.supportedEncodings.contains(encoding)) { // We return the first supported encoding on the list
+                    return Optional.of(encoding);
+                }
+            }
         }
 
         return Optional.empty();
@@ -63,5 +129,11 @@ public record Request(
         return headers
                 .map(h -> h.split(":"))
                 .collect(Collectors.toMap(h -> h[0], h -> h[1].trim()));
+    }
+
+    private static byte[] parseBody(BufferedReader reader, int contentLength) throws IOException {
+        char[] charBuffer = new char[contentLength];
+        int __ = reader.read(charBuffer, 0, contentLength);
+        return new String(charBuffer).getBytes(StandardCharsets.UTF_8);
     }
 }

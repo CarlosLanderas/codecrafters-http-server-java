@@ -14,7 +14,7 @@ public class ResponseTest {
         response.setContentType("text/plain");
 
         var rString =  new String(response.render());
-        var expected = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 22\r\n\r\nDummy response content";
+        var expected = "HTTP/1.1 200 OK\r\nContent-Length: 22\r\nContent-Type: text/plain\r\n\r\nDummy response content";
 
         assertEquals(expected, rString);
     }

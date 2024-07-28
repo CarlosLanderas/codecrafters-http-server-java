@@ -50,6 +50,7 @@ public class Handlers {
 
         Response.ok(echoValue.getBytes())
                 .setContentType("text/plain")
+                .setContentEncoding(request.acceptEncoding())
                 .writeTo(writer);
     }
 

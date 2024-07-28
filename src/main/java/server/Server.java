@@ -6,12 +6,17 @@ import http.ResponseWriter;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class Server implements AutoCloseable {
     private final Router router;
     private final ServerSocket serverSocket;
     private final String contentPath;
+
+    public static final List<String> supportedEncodings = Collections.singletonList("gzip");
 
     public Server(Router router, int port, String contentPath) throws IOException {
         this.router = router;
@@ -32,7 +37,7 @@ public class Server implements AutoCloseable {
             try (var reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                 var request = Request.fromReader(reader);
                 var handler = router.get(request.path(), request.method());
-                var rw = new ResponseWriter(socket.getOutputStream());
+                var rw = new ResponseWriter(socket.getOutputStream(), request);
 
                 handler.handle(request, rw);
                 rw.close();

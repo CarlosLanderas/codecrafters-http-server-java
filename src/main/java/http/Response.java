@@ -1,14 +1,15 @@
 package http;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public class Response {
     private int statusCode;
     private byte[] body;
-    private String contentType = "";
-    private int contentLength;
+    private final Map<String, String> headers = new HashMap<>();
 
     public static Response ok(byte[] body) {
         return response(200, body);
@@ -26,29 +27,56 @@ public class Response {
         return response(500, message.getBytes());
     }
 
-    public String bodyContent() {
+    public byte[] body() {
+        return body;
+    }
+
+    public String bodyString() {
         return body == null ? "" : new String(body, StandardCharsets.UTF_8);
     }
 
     public Response setContentType(String contentType) {
-        this.contentType = contentType;
+        this.headers.put("Content-Type", contentType);
+        return this;
+    }
+
+    public Response setContentEncoding(Optional<String> encoding) {
+        encoding.ifPresent(e -> this.headers.put("Content-Encoding", e));
+        return this;
+    }
+
+    public Response setBody(byte[] body) {
+        this.body = body;
         return this;
     }
 
     public byte[] render() {
+
+        StringBuilder headerBuilder = new StringBuilder();
+
+        for (var header : headers.entrySet()) {
+            headerBuilder
+                    .append(header.getKey())
+                    .append(": ").append(header.getValue()).append("\r\n");
+        }
+
         var response = String.format(
-                "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %d\r\n\r\n%s",
+                "HTTP/1.1 %d %s\r\n%s\r\n%s",
                 statusCode,
                 statusName(),
-                contentType,
-                contentLength,
-                bodyContent());
+                headerBuilder,
+                bodyString());
 
         return response.getBytes(StandardCharsets.UTF_8);
     }
 
     public void writeTo(ResponseWriter writer) throws IOException {
-        writer.write(render());
+        writer.write(this);
+    }
+
+    private Response setContentLength(int length) {
+        this.headers.put("Content-Length", Integer.toString(length));
+        return this;
     }
 
     private static Response response(int statusCode, byte[] body) {
@@ -58,7 +86,7 @@ public class Response {
         response.body = body;
 
         if (body != null) {
-            response.contentLength = body.length;
+            response.setContentLength(body.length);
         }
 
         return response;

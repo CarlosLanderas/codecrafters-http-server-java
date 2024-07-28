@@ -6,16 +6,17 @@ import http.ResponseWriter;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 
 public class Server implements AutoCloseable {
     private final Router router;
     private final ServerSocket serverSocket;
+    private final String contentPath;
 
-    public Server(Router router, int port) throws IOException {
+    public Server(Router router, int port, String contentPath) throws IOException {
         this.router = router;
         this.serverSocket = new ServerSocket(port);
+        this.contentPath = contentPath;
         this.serverSocket.setReuseAddress(true);
     }
 

@@ -26,8 +26,9 @@ public class Response {
         return body == null ? "" : new String(body, StandardCharsets.UTF_8);
     }
 
-    public void setContentType(String contentType) {
+    public Response setContentType(String contentType) {
         this.contentType = contentType;
+        return this;
     }
 
     public byte[] render() {

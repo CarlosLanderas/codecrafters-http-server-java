@@ -18,6 +18,10 @@ public class Response {
         return response(404, null);
     }
 
+    public static Response error(String message) {
+        return response(500, message.getBytes());
+    }
+
     public String bodyContent() {
         return body == null ? "" : new String(body, StandardCharsets.UTF_8);
     }

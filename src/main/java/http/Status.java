@@ -2,7 +2,8 @@ package http;
 
 public enum Status {
     Ok("OK"),
-    NotFound("Not Found");
+    NotFound("Not Found"),
+    Error("Error");
 
     private final String value;
 
@@ -18,6 +19,7 @@ public enum Status {
         return switch (code) {
             case 200 -> Ok;
             case 404 -> NotFound;
+            case 500 -> Error;
             default -> throw new IllegalArgumentException("Unsupported HTTP status code: " + code);
         };
     }

@@ -9,11 +9,11 @@ public class Main {
     public static void main(String[] args) {
 
         var router = new Router();
+        router.register("/user-agent", Method.GET, Handlers::userAgentHandler);
         router.register("/echo/.*", Method.GET, Handlers::echoHandler);
         router.register("/$", Method.GET, Handlers::rootHandler);
 
         try (var server = new Server(router, port)) {
-
             System.out.println("Server started on port: " + port);
             server.start();
         } catch (Exception ex) {

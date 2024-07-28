@@ -1,4 +1,2 @@
-java_http.jar
-target/*
-target/
+.vscode/
 .idea/

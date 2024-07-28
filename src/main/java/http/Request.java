@@ -9,19 +9,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Request {
-
+    private String protocol;
     private String path;
     private Method method;
-    private String protocol;
     private byte[] body;
     private Map<String, String> headers = new HashMap<>();
 
     public static Request create(String path, Method method, String protocol) {
         return new Request()
-                .withPath(protocol)
+                .withProtocol(protocol)
                 .withPath(path)
-                .withMethod(method)
-                .withPath(path);
+                .withMethod(method);
     }
 
     public static Request fromReader(BufferedReader reader) throws IOException {
@@ -58,6 +56,11 @@ public class Request {
 
     public Request withPath(String path) {
         this.path = path;
+        return this;
+    }
+
+    public Request withProtocol(String protocol) {
+        this.protocol = protocol;
         return this;
     }
 
@@ -133,7 +136,7 @@ public class Request {
 
     private static byte[] parseBody(BufferedReader reader, int contentLength) throws IOException {
         char[] charBuffer = new char[contentLength];
-        int __ = reader.read(charBuffer, 0, contentLength);
+        reader.read(charBuffer, 0, contentLength);
         return new String(charBuffer).getBytes(StandardCharsets.UTF_8);
     }
 }

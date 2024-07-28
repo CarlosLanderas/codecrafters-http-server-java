@@ -6,7 +6,6 @@ import http.ResponseWriter;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -14,18 +13,16 @@ import java.util.concurrent.CompletableFuture;
 public class Server implements AutoCloseable {
     private final Router router;
     private final ServerSocket serverSocket;
-    private final String contentPath;
 
     public static final List<String> supportedEncodings = Collections.singletonList("gzip");
 
-    public Server(Router router, int port, String contentPath) throws IOException {
+    public Server(Router router, int port) throws IOException {
         this.router = router;
         this.serverSocket = new ServerSocket(port);
-        this.contentPath = contentPath;
         this.serverSocket.setReuseAddress(true);
     }
 
-    public void start() throws IOException, InterruptedException {
+    public void start() throws IOException {
         while (!serverSocket.isClosed()) {
             Socket socket = serverSocket.accept();
             handleSocket(socket);
@@ -40,16 +37,11 @@ public class Server implements AutoCloseable {
                 var rw = new ResponseWriter(socket.getOutputStream(), request);
 
                 handler.handle(request, rw);
-                rw.close();
 
+                rw.close();
+                socket.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
-            } finally {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
             }
         });
     }

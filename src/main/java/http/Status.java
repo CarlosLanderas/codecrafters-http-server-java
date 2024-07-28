@@ -1,10 +1,10 @@
 package http;
 
 public enum Status {
-    Ok("OK"),
-    Created("Created"),
-    NotFound("Not Found"),
-    Error("Error");
+    OK("OK"),
+    CREATED("Created"),
+    NOTFOUND("Not Found"),
+    ERROR("Error");
 
     private final String value;
 
@@ -18,13 +18,11 @@ public enum Status {
 
     public static Status fromCode(int code) {
         return switch (code) {
-            case 200 -> Ok;
-            case 201 -> Created;
-            case 404 -> NotFound;
-            case 500 -> Error;
+            case 200 -> OK;
+            case 201 -> CREATED;
+            case 404 -> NOTFOUND;
+            case 500 -> ERROR;
             default -> throw new IllegalArgumentException("Unsupported HTTP status code: " + code);
         };
     }
-
-
 }

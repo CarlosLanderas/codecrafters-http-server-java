@@ -7,7 +7,6 @@ public class Main {
     private final static int port = 4221;
 
     public static void main(String[] args) {
-
         String contentPath = "";
         if(args.length > 1) {
             contentPath = args[1];
@@ -21,7 +20,7 @@ public class Main {
         router.register("/echo/.*", Method.GET, Handlers::echoHandler);
         router.register("/$", Method.GET, Handlers::rootHandler);
 
-        try (var server = new Server(router, port, contentPath)) {
+        try (var server = new Server(router, port)) {
             System.out.println("Server started on port: " + port);
             server.start();
         } catch (Exception ex) {

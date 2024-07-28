@@ -11,6 +11,8 @@ public class Response {
     private byte[] body;
     private final Map<String, String> headers = new HashMap<>();
 
+    private static final String CONTENT_LENGTH_HEADER = "Content-Length";
+
     public static Response ok(byte[] body) {
         return response(200, body);
     }
@@ -31,8 +33,10 @@ public class Response {
         return body;
     }
 
-    public String bodyString() {
-        return body == null ? "" : new String(body, StandardCharsets.UTF_8);
+    public int contentLength() {
+        return this.headers.containsKey(CONTENT_LENGTH_HEADER) ?
+                Integer.parseInt(this.headers.get(CONTENT_LENGTH_HEADER)) :
+                0;
     }
 
     public Response setContentType(String contentType) {
@@ -45,13 +49,18 @@ public class Response {
         return this;
     }
 
+    public Response setContentLength(int length) {
+        this.headers.put(CONTENT_LENGTH_HEADER, Integer.toString(length));
+        return this;
+    }
+
     public Response setBody(byte[] body) {
         this.body = body;
+        this.setContentLength(body.length);
         return this;
     }
 
     public byte[] render() {
-
         StringBuilder headerBuilder = new StringBuilder();
 
         for (var header : headers.entrySet()) {
@@ -61,26 +70,29 @@ public class Response {
         }
 
         var response = String.format(
-                "HTTP/1.1 %d %s\r\n%s\r\n%s",
+                "HTTP/1.1 %d %s\r\n%s\r\n",
                 statusCode,
                 statusName(),
-                headerBuilder,
-                bodyString());
+                headerBuilder).getBytes();
 
-        return response.getBytes(StandardCharsets.UTF_8);
+        var responseLength = response.length + (body == null ? 0 : body.length);
+        var responseBytes = new byte[responseLength];
+
+        System.arraycopy(response, 0, responseBytes, 0, response.length);
+
+        if (body != null) {
+            System.arraycopy(body, 0, responseBytes, response.length, body.length);
+        }
+
+        return responseBytes;
     }
 
     public void writeTo(ResponseWriter writer) throws IOException {
         writer.write(this);
     }
 
-    private Response setContentLength(int length) {
-        this.headers.put("Content-Length", Integer.toString(length));
-        return this;
-    }
 
     private static Response response(int statusCode, byte[] body) {
-
         var response = new Response();
         response.statusCode = statusCode;
         response.body = body;

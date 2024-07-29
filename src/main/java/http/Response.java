@@ -1,17 +1,16 @@
 package http;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import static http.HeaderNames.*;
 
 public class Response {
     private int statusCode;
     private byte[] body;
     private final Map<String, String> headers = new HashMap<>();
-
-    private static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
     public static Response ok(byte[] body) {
         return response(200, body);
@@ -34,23 +33,23 @@ public class Response {
     }
 
     public int contentLength() {
-        return this.headers.containsKey(CONTENT_LENGTH_HEADER) ?
-                Integer.parseInt(this.headers.get(CONTENT_LENGTH_HEADER)) :
+        return this.headers.containsKey(CONTENT_LENGTH) ?
+                Integer.parseInt(this.headers.get(CONTENT_LENGTH)) :
                 0;
     }
 
     public Response setContentType(String contentType) {
-        this.headers.put("Content-Type", contentType);
+        this.headers.put(CONTENT_TYPE, contentType);
         return this;
     }
 
     public Response setContentEncoding(Optional<String> encoding) {
-        encoding.ifPresent(e -> this.headers.put("Content-Encoding", e));
+        encoding.ifPresent(e -> this.headers.put(CONTENT_ENCODING, e));
         return this;
     }
 
     public Response setContentLength(int length) {
-        this.headers.put(CONTENT_LENGTH_HEADER, Integer.toString(length));
+        this.headers.put(CONTENT_LENGTH, Integer.toString(length));
         return this;
     }
 

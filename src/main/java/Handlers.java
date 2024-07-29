@@ -1,3 +1,4 @@
+import http.HeaderNames;
 import http.Request;
 import http.Response;
 import http.ResponseWriter;
@@ -6,6 +7,8 @@ import http.handler.Handler;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import static http.HeaderNames.USER_AGENT;
 
 public class Handlers {
 
@@ -34,7 +37,7 @@ public class Handlers {
     }
 
     public static void userAgentHandler(Request request, ResponseWriter writer) throws IOException {
-        var userAgent = request.getHeader("User-Agent");
+        var userAgent = request.getHeader(USER_AGENT);
         if (userAgent.isEmpty()) {
             Response.error("user agent header not found").writeTo(writer);
             return;

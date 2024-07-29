@@ -8,6 +8,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static http.HeaderNames.ACCEPT_ENCODING;
+import static http.HeaderNames.CONTENT_LENGTH;
+
 public class Request {
     private String protocol;
     private String path;
@@ -94,16 +97,16 @@ public class Request {
     }
 
     public int contentLength() {
-        if (hasHeader("Content-Length")) {
-            return Integer.parseInt(headers.get("Content-Length"));
+        if (hasHeader(CONTENT_LENGTH)) {
+            return Integer.parseInt(headers.get(CONTENT_LENGTH));
         }
 
         return 0;
     }
 
     public Optional<String> acceptEncoding() {
-        if (hasHeader("Accept-Encoding")) {
-            var headerEncodings = Arrays.stream(headers.get("Accept-Encoding")
+        if (hasHeader(ACCEPT_ENCODING)) {
+            var headerEncodings = Arrays.stream(headers.get(ACCEPT_ENCODING)
                             .split(","))
                     .map(String::trim)
                     .toList();
